@@ -114,8 +114,44 @@ bool copy(
 	const CSimplePointsMap& obj, const std_msgs::Header& msg_header,
 	sensor_msgs::PointCloud2& msg)
 {
-	MRPT_TODO("Implement pointcloud2 mrpt2ros");
-	throw ros::Exception("not implemented yet.");
+	msg.header = msg_header;
+	// We assume pointcloud is not ordered.
+	msg.width = obj.size();
+	msg.height = 1;
+	// We assume channels will be empty, so XYZ info alone.
+	msg.fields.resize(3);
+	msg.fields[0].name = "x";msg.fields[1].name = "y";msg.fields[2].name = "z";
+	int offset = 0;
+ 	// All offsets are *4, as all field data types are float32
+	for (size_t d = 0; d < msg.fields.size(); ++d, offset += 4)
+	{
+		msg.fields[d].offset = offset;
+		msg.fields[d].datatype = sensor_msgs::PointField::FLOAT32;
+		msg.fields[d].count  = 1;
+	}
+	msg.point_step = offset;
+	msg.row_step   = msg.point_step * msg.width;
+	msg.data.resize (obj.size() * msg.point_step);
+	msg.is_bigendian = false;  // @todo ?
+	msg.is_dense     = false;
+
+	for (size_t cp = 0; cp < obj.size(); ++cp)
+	{
+		std::vector<float> pos;
+		obj.getPointAllFieldsFast(cp,pos);
+		memcpy(&msg.data[cp * msg.point_step + msg.fields[0].offset],
+		&pos[0], 3*sizeof(float)); // We copy the 3 fields XYZ in one go.
+
+		/* 
+		Alternatively you could do:
+		memcpy (&msg.data[cp * msg.point_step + msg.fields[0].offset], &pos[0], sizeof (float));
+		memcpy (&msg.data[cp * msg.point_step + msg.fields[1].offset], &pos[1], sizeof (float));
+		memcpy (&msg.data[cp * msg.point_step + msg.fields[2].offset], &pos[2], sizeof (float));
+		*/
+	}
+
+	//MRPT_TODO("Implement pointcloud2 mrpt2ros");
+	//throw ros::Exception("not implemented yet.");
 	return true;
 }
 

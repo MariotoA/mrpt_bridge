@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-set (CMAKE_CXX_STANDARD 14)
+ADD_COMPILE_OPTIONS("-std=c++17")
 project(mrpt_bridge)
 
 ## Find catkin macros and# libraries
@@ -19,13 +19,15 @@ find_package(catkin REQUIRED COMPONENTS
 	stereo_msgs
 	tf
 )
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## System dependencies are found with CMake's conventions
 find_package(PCL 1.3 REQUIRED COMPONENTS common io)
 include_directories(${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-find_package(MRPT 1.5 REQUIRED obs graphs maps slam)
+message("Mensajito ${CMAKE_PREFIX_PATH} ")
+find_package(MRPT 1.9.9 REQUIRED obs graphs maps slam)
 message(STATUS "MRPT_VERSION: ${MRPT_VERSION}")
 
 # Debian Stretch doesn't properly find the recursive Qt5Widgets dependency from
